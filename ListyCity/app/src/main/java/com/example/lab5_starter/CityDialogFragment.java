@@ -17,6 +17,7 @@ public class CityDialogFragment extends DialogFragment {
     interface CityDialogListener {
         void updateCity(City city, String title, String year);
         void addCity(City city);
+        void deleteCity(City city);
     }
     private CityDialogListener listener;
 
@@ -51,6 +52,11 @@ public class CityDialogFragment extends DialogFragment {
         Bundle bundle = getArguments();
         City city;
 
+        android.widget.Button inlineDelete = view.findViewById(R.id.buttonDeleteCity);
+        if (Objects.equals(tag, "Add City") && inlineDelete != null) {
+            inlineDelete.setVisibility(View.GONE);
+        }
+
         if (Objects.equals(tag, "City Details") && bundle != null){
             city = (City) bundle.getSerializable("City");
             assert city != null;
@@ -60,10 +66,9 @@ public class CityDialogFragment extends DialogFragment {
         else {
             city = null;}
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        return builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
                 .setView(view)
-                .setTitle("City Details")
+                .setTitle(Objects.equals(tag, "City Details") ? "City Details" : "Add City")
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Continue", (dialog, which) -> {
                     String title = editMovieName.getText().toString();
@@ -73,7 +78,17 @@ public class CityDialogFragment extends DialogFragment {
                     } else {
                         listener.addCity(new City(title, year));
                     }
-                })
-                .create();
+                });
+
+// Only show the bottom-left DELETE action for “City Details”
+        if (Objects.equals(tag, "City Details")) {
+            builder.setNeutralButton("Delete", (dialog, which) -> {
+                if (listener != null && city != null) {
+                    listener.deleteCity(city);
+                }
+            });
+        }
+
+        return builder.create();
     }
 }
